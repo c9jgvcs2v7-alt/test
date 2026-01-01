@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mobile test</title>
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --accent: #22c55e;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(180deg, #020617, #020617 40%, #020617);
+      color: var(--text);
+    }
+
+    .card {
+      width: min(92vw, 360px);
+      background: var(--card);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,.4);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 18px;
+      margin: 0 0 8px;
+    }
+
+    p {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 0 0 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border-radius: 12px;
+      border: none;
+      background: var(--accent);
+      color: #052e16;
+      font-weight: 600;
+    }
+
+    .counter {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>Mobile test</h1>
+    <p>CSS + JS + localStorage</p>
+
+    <button id="btn">Нажми меня</button>
+
+    <div class="counter" id="counter"></div>
+  </div>
+
+  <script>
+    const btn = document.getElementById("btn");
+    const counterEl = document.getElementById("counter");
+
+    let count = Number(localStorage.getItem("tapCount") || 0);
+
+    function render() {
+      counterEl.textContent = `Нажатий: ${count}`;
+    }
+
+    btn.addEventListener("click", () => {
+      count++;
+      localStorage.setItem("tapCount", count);
+      render();
+    });
+
+    render();
+  </script>
+
+</body>
+</html>
