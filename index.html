@@ -1,100 +1,331 @@
 <!doctype html>
 <html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mobile test</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Python в браузере (Pyodide)</title>
+    <style>
+      :root {
+        --bg: #0b0f14;
+        --panel: #111826;
+        --border: rgba(255, 255, 255, 0.12);
+        --text: rgba(255, 255, 255, 0.9);
+        --muted: rgba(255, 255, 255, 0.65);
+        --accent: #6ea8fe;
+        --danger: #ff6b6b;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
+          "Segoe UI Emoji";
+      }
 
-  <style>
-    :root {
-      --bg: red;
-      --card: #111827;
-      --accent: #38bdf8;
-      --text: #e5e7eb;
-      --muted: #9ca3af;
-    }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: var(--sans);
+        background: var(--bg);
+        color: var(--text);
+      }
 
-    * {
-      box-sizing: border-box;
-    }
+      .app {
+        min-height: 100vh;
+        padding: 16px;
+        display: grid;
+        gap: 12px;
+        grid-template-rows: auto 1fr;
+      }
 
-    body {
-      margin: 0;
-      min-height: 100dvh;
-      display: grid;
-      place-items: center;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(180deg, #020617, #020617 40%, #020617);
-      color: var(--text);
-    }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--panel);
+      }
 
-    .card {
-      width: min(92vw, 360px);
-      background: var(--card);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 20px 40px rgba(0,0,0,.4);
-      text-align: center;
-    }
+      .title {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .title h1 {
+        font-size: 14px;
+        margin: 0;
+        font-weight: 650;
+        letter-spacing: 0.2px;
+      }
+      .title .hint {
+        font-size: 12px;
+        color: var(--muted);
+      }
 
-    h1 {
-      font-size: 18px;
-      margin: 0 0 8px;
-    }
+      .actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
 
-    p {
-      font-size: 14px;
-      color: var(--muted);
-      margin: 0 0 16px;
-    }
+      button {
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        padding: 10px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: transform 0.03s ease, background 0.2s ease, border-color 0.2s ease;
+      }
+      button:hover { background: rgba(255, 255, 255, 0.09); }
+      button:active { transform: translateY(1px); }
+      button.primary {
+        border-color: rgba(110, 168, 254, 0.45);
+        background: rgba(110, 168, 254, 0.14);
+      }
+      button.primary:hover { background: rgba(110, 168, 254, 0.18); }
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
 
-    button {
-      width: 100%;
-      padding: 14px;
-      font-size: 16px;
-      border-radius: 12px;
-      border: none;
-      background: var(--accent);
-      color: #052e16;
-      font-weight: 600;
-    }
+      .status {
+        font-size: 12px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
 
-    .counter {
-      margin-top: 12px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-  </style>
-</head>
-<body>
+      .grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 0.7fr;
+        min-height: 0; /* важно для скролла */
+      }
 
-  <div class="card">
-    <h1>Mobile test</h1>
-    <p>CSS + JS + localStorage</p>
+      @media (min-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: 1fr;
+        }
+      }
 
-    <button id="btn">Нажми меня</button>
+      .panel {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--panel);
+        overflow: hidden;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
 
-    <div class="counter" id="counter"></div>
-  </div>
+      .panel-header {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
 
-  <script>
-    const btn = document.getElementById("btn");
-    const counterEl = document.getElementById("counter");
+      .panel-header .label {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 650;
+        letter-spacing: 0.2px;
+      }
 
-    let count = Number(localStorage.getItem("tapCount") || 0);
+      textarea {
+        width: 100%;
+        flex: 1;
+        resize: none;
+        border: 0;
+        outline: none;
+        padding: 12px;
+        background: transparent;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.45;
+        min-height: 0;
+      }
 
-    function render() {
-      counterEl.textContent = `НАЖАТИЙ: ${count}`;
-    }
+      pre {
+        margin: 0;
+        flex: 1;
+        padding: 12px;
+        overflow: auto;
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.45;
+        color: var(--text);
+        min-height: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
 
-    btn.addEventListener("click", () => {
-      count++;
-      localStorage.setItem("tapCount", count);
-      render();
-    });
+      .err {
+        color: var(--danger);
+      }
+    </style>
+  </head>
 
-    render();
-  </script>
+  <body>
+    <div class="app">
+      <div class="topbar">
+        <div class="title">
+          <h1>Python на странице</h1>
+          <div class="hint">Выполнение через Pyodide (Python → WebAssembly). Откройте файл в браузере и запускайте код.</div>
+        </div>
 
-</body>
+        <div class="actions">
+          <div class="status" id="status">Загрузка Pyodide…</div>
+          <button id="btnRun" class="primary" disabled>Run</button>
+          <button id="btnClearOut" disabled>Clear output</button>
+          <button id="btnReset" disabled>Reset code</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="label">Код (Python)</div>
+          </div>
+          <textarea id="code" spellcheck="false"></textarea>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="label">Вывод</div>
+          </div>
+          <pre id="output"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pyodide CDN -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"></script>
+
+    <script>
+      const els = {
+        status: document.getElementById("status"),
+        code: document.getElementById("code"),
+        output: document.getElementById("output"),
+        btnRun: document.getElementById("btnRun"),
+        btnClearOut: document.getElementById("btnClearOut"),
+        btnReset: document.getElementById("btnReset"),
+      };
+
+      const DEFAULT_CODE = `print("Hello from Python!")
+x = 2 + 2
+print("2 + 2 =", x)
+
+def fib(n):
+    a, b = 0, 1
+    out = []
+    for _ in range(n):
+        out.append(a)
+        a, b = b, a + b
+    return out
+
+print("fib(10) =", fib(10))
+`;
+
+      let pyodide = null;
+
+      function setStatus(text) {
+        els.status.textContent = text;
+      }
+
+      function appendOut(text) {
+        els.output.textContent += text;
+        // автоскролл вниз
+        els.output.scrollTop = els.output.scrollHeight;
+      }
+
+      function clearOut() {
+        els.output.textContent = "";
+      }
+
+      function setErrorMode(isErr) {
+        els.output.classList.toggle("err", isErr);
+      }
+
+      function setUIEnabled(enabled) {
+        els.btnRun.disabled = !enabled;
+        els.btnClearOut.disabled = !enabled;
+        els.btnReset.disabled = !enabled;
+      }
+
+      async function init() {
+        els.code.value = DEFAULT_CODE;
+
+        try {
+          pyodide = await loadPyodide({
+            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.26.2/full/",
+          });
+
+          // Перехват stdout/stderr
+          pyodide.setStdout({
+            batched: (s) => appendOut(s),
+          });
+          pyodide.setStderr({
+            batched: (s) => appendOut(s),
+          });
+
+          setStatus("Готово");
+          setUIEnabled(true);
+        } catch (e) {
+          setStatus("Ошибка загрузки Pyodide");
+          clearOut();
+          setErrorMode(true);
+          appendOut(String(e) + "\n");
+        }
+      }
+
+      async function runCode() {
+        if (!pyodide) return;
+
+        setErrorMode(false);
+        appendOut("\n> Run\n");
+
+        const code = els.code.value;
+
+        // UI-блокировка на время выполнения
+        els.btnRun.disabled = true;
+        setStatus("Выполняется…");
+
+        try {
+          // runPythonAsync — чтобы поддерживать await и не блокировать промисы
+          const result = await pyodide.runPythonAsync(code);
+
+          // Если пользователь написал выражение последней строкой, Pyodide может вернуть значение
+          if (result !== undefined) {
+            appendOut(String(result) + "\n");
+          }
+
+          setStatus("Готово");
+        } catch (e) {
+          setStatus("Ошибка выполнения");
+          setErrorMode(true);
+          appendOut(String(e) + "\n");
+        } finally {
+          els.btnRun.disabled = false;
+        }
+      }
+
+      els.btnRun.addEventListener("click", runCode);
+      els.btnClearOut.addEventListener("click", () => {
+        setErrorMode(false);
+        clearOut();
+      });
+      els.btnReset.addEventListener("click", () => {
+        els.code.value = DEFAULT_CODE;
+      });
+
+      init();
+    </script>
+  </body>
 </html>
