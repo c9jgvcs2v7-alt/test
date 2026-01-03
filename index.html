@@ -3,112 +3,74 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Python в браузере (Pyodide)</title>
+    <title>Python Runner (Pyodide)</title>
     <style>
       :root {
         --bg: #0b0f14;
         --panel: #111826;
         --border: rgba(255, 255, 255, 0.12);
-        --text: rgba(255, 255, 255, 0.9);
+        --text: rgba(255, 255, 255, 0.92);
         --muted: rgba(255, 255, 255, 0.65);
         --accent: #6ea8fe;
         --danger: #ff6b6b;
         --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
-          "Segoe UI Emoji";
+        --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       }
-
       * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        font-family: var(--sans);
-        background: var(--bg);
-        color: var(--text);
-      }
-
-      .app {
-        min-height: 100vh;
-        padding: 16px;
-        display: grid;
-        gap: 12px;
-        grid-template-rows: auto 1fr;
-      }
+      body { margin: 0; font-family: var(--sans); background: var(--bg); color: var(--text); }
+      .app { min-height: 100vh; padding: 16px; display: grid; gap: 12px; grid-template-rows: auto 1fr; }
 
       .topbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 12px 14px;
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--panel);
+      }
+      .title { display: flex; flex-direction: column; gap: 3px; }
+      .title h1 { font-size: 14px; margin: 0; font-weight: 700; letter-spacing: .2px; }
+      .title .hint { font-size: 12px; color: var(--muted); }
+
+      .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+      .status { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+      button, input[type="number"] {
         border: 1px solid var(--border);
-        border-radius: 12px;
-        background: var(--panel);
-      }
-
-      .title {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-      .title h1 {
-        font-size: 14px;
-        margin: 0;
-        font-weight: 650;
-        letter-spacing: 0.2px;
-      }
-      .title .hint {
-        font-size: 12px;
-        color: var(--muted);
-      }
-
-      .actions {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-
-      button {
-        border: 1px solid var(--border);
-        background: rgba(255, 255, 255, 0.06);
+        background: rgba(255,255,255,0.06);
         color: var(--text);
         padding: 10px 12px;
         border-radius: 10px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: transform 0.03s ease, background 0.2s ease, border-color 0.2s ease;
+        font-weight: 650;
       }
-      button:hover { background: rgba(255, 255, 255, 0.09); }
+      button { cursor: pointer; transition: transform .03s ease, background .2s ease; }
+      button:hover { background: rgba(255,255,255,0.09); }
       button:active { transform: translateY(1px); }
-      button.primary {
-        border-color: rgba(110, 168, 254, 0.45);
-        background: rgba(110, 168, 254, 0.14);
-      }
-      button.primary:hover { background: rgba(110, 168, 254, 0.18); }
-      button:disabled {
-        opacity: 0.55;
-        cursor: not-allowed;
-      }
+      button.primary { border-color: rgba(110,168,254,.45); background: rgba(110,168,254,.14); }
+      button.primary:hover { background: rgba(110,168,254,.18); }
+      button.danger { border-color: rgba(255,107,107,.45); background: rgba(255,107,107,.12); }
+      button.danger:hover { background: rgba(255,107,107,.16); }
+      button:disabled { opacity: .55; cursor: not-allowed; }
 
-      .status {
-        font-size: 12px;
-        color: var(--muted);
-        white-space: nowrap;
+      .row {
+        display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
       }
+      .row label { font-size: 12px; color: var(--muted); font-weight: 650; }
 
       .grid {
         display: grid;
         gap: 12px;
         grid-template-columns: 1fr;
-        grid-template-rows: 1fr 0.7fr;
-        min-height: 0; /* важно для скролла */
+        grid-template-rows: 1fr 0.6fr 0.8fr;
+        min-height: 0;
       }
-
-      @media (min-width: 900px) {
+      @media (min-width: 980px) {
         .grid {
-          grid-template-columns: 1fr 1fr;
-          grid-template-rows: 1fr;
+          grid-template-columns: 1.2fr 0.8fr;
+          grid-template-rows: 1fr 1fr;
+          grid-template-areas:
+            "code out"
+            "stdin out";
         }
+        .code { grid-area: code; }
+        .stdin { grid-area: stdin; }
+        .out { grid-area: out; }
       }
 
       .panel {
@@ -120,7 +82,6 @@
         display: flex;
         flex-direction: column;
       }
-
       .panel-header {
         padding: 10px 12px;
         border-bottom: 1px solid var(--border);
@@ -129,13 +90,7 @@
         justify-content: space-between;
         gap: 10px;
       }
-
-      .panel-header .label {
-        font-size: 12px;
-        color: var(--muted);
-        font-weight: 650;
-        letter-spacing: 0.2px;
-      }
+      .panel-header .label { font-size: 12px; color: var(--muted); font-weight: 750; letter-spacing: .2px; }
 
       textarea {
         width: 100%;
@@ -150,6 +105,7 @@
         font-size: 13px;
         line-height: 1.45;
         min-height: 0;
+        tab-size: 2;
       }
 
       pre {
@@ -160,15 +116,14 @@
         font-family: var(--mono);
         font-size: 13px;
         line-height: 1.45;
-        color: var(--text);
-        min-height: 0;
         white-space: pre-wrap;
         word-break: break-word;
+        min-height: 0;
       }
-
-      .err {
-        color: var(--danger);
-      }
+      .err { color: var(--danger); }
+      .muted { color: var(--muted); }
+      .chip { font-size: 12px; padding: 6px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+      .hidden { display: none !important; }
     </style>
   </head>
 
@@ -176,27 +131,50 @@
     <div class="app">
       <div class="topbar">
         <div class="title">
-          <h1>Python на странице</h1>
-          <div class="hint">Выполнение через Pyodide (Python → WebAssembly). Откройте файл в браузере и запускайте код.</div>
+          <h1>Python Runner</h1>
+          <div class="hint">Pyodide в Web Worker. Ctrl/⌘+Enter — Run, Ctrl/⌘+L — Clear. Код автосохраняется.</div>
         </div>
 
         <div class="actions">
-          <div class="status" id="status">Загрузка Pyodide…</div>
+          <div class="row">
+            <label for="timeout">Timeout (сек):</label>
+            <input id="timeout" type="number" min="1" max="60" step="1" value="5" style="width:72px" />
+            <span class="chip" id="sabState">interrupt: ?</span>
+          </div>
+
+          <div class="status" id="status">Инициализация…</div>
           <button id="btnRun" class="primary" disabled>Run</button>
+          <button id="btnStop" class="danger" disabled>Stop</button>
           <button id="btnClearOut" disabled>Clear output</button>
-          <button id="btnReset" disabled>Reset code</button>
+          <button id="btnResetCode" disabled>Reset code</button>
+
+          <button id="btnDownload" disabled>Download .py</button>
+          <button id="btnUpload" disabled>Upload .py</button>
+          <input id="fileInput" type="file" accept=".py,text/plain" class="hidden" />
         </div>
       </div>
 
       <div class="grid">
-        <div class="panel">
+        <div class="panel code">
           <div class="panel-header">
             <div class="label">Код (Python)</div>
+            <div class="muted" style="font-size:12px">Tab — отступ • Shift+Tab — убрать</div>
           </div>
           <textarea id="code" spellcheck="false"></textarea>
         </div>
 
-        <div class="panel">
+        <div class="panel stdin">
+          <div class="panel-header">
+            <div class="label">stdin (для input())</div>
+            <div class="muted" style="font-size:12px">Каждая строка — новый ввод</div>
+          </div>
+          <textarea id="stdin" spellcheck="false" placeholder="Например:
+Alice
+42
+"></textarea>
+        </div>
+
+        <div class="panel out">
           <div class="panel-header">
             <div class="label">Вывод</div>
           </div>
@@ -205,127 +183,380 @@
       </div>
     </div>
 
-    <!-- Pyodide CDN -->
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"></script>
-
     <script>
       const els = {
         status: document.getElementById("status"),
         code: document.getElementById("code"),
+        stdin: document.getElementById("stdin"),
         output: document.getElementById("output"),
+        timeout: document.getElementById("timeout"),
+        sabState: document.getElementById("sabState"),
+
         btnRun: document.getElementById("btnRun"),
+        btnStop: document.getElementById("btnStop"),
         btnClearOut: document.getElementById("btnClearOut"),
-        btnReset: document.getElementById("btnReset"),
+        btnResetCode: document.getElementById("btnResetCode"),
+
+        btnDownload: document.getElementById("btnDownload"),
+        btnUpload: document.getElementById("btnUpload"),
+        fileInput: document.getElementById("fileInput"),
       };
+
+      const LS_KEY_CODE = "py_runner_code_v1";
+      const LS_KEY_STDIN = "py_runner_stdin_v1";
 
       const DEFAULT_CODE = `print("Hello from Python!")
 x = 2 + 2
 print("2 + 2 =", x)
 
-def fib(n):
-    a, b = 0, 1
-    out = []
-    for _ in range(n):
-        out.append(a)
-        a, b = b, a + b
-    return out
-
-print("fib(10) =", fib(10))
+name = input("Name? ")
+print("Hello,", name)
 `;
 
-      let pyodide = null;
+      let worker = null;
+      let interruptView = null;
+      let supportsSAB = typeof SharedArrayBuffer !== "undefined";
 
-      function setStatus(text) {
-        els.status.textContent = text;
-      }
-
-      function appendOut(text) {
-        els.output.textContent += text;
-        // автоскролл вниз
+      function setStatus(s) { els.status.textContent = s; }
+      function clearOut() { els.output.textContent = ""; els.output.classList.remove("err"); }
+      function appendOut(s) {
+        els.output.textContent += s;
         els.output.scrollTop = els.output.scrollHeight;
       }
+      function setErr(on) { els.output.classList.toggle("err", !!on); }
 
-      function clearOut() {
-        els.output.textContent = "";
+      function setUIReady(ready) {
+        els.btnRun.disabled = !ready;
+        els.btnClearOut.disabled = !ready;
+        els.btnResetCode.disabled = !ready;
+        els.btnDownload.disabled = !ready;
+        els.btnUpload.disabled = !ready;
+        // Stop включаем только когда реально “бежит”
+        els.btnStop.disabled = true;
       }
 
-      function setErrorMode(isErr) {
-        els.output.classList.toggle("err", isErr);
+      function saveToLS() {
+        localStorage.setItem(LS_KEY_CODE, els.code.value);
+        localStorage.setItem(LS_KEY_STDIN, els.stdin.value);
       }
 
-      function setUIEnabled(enabled) {
-        els.btnRun.disabled = !enabled;
-        els.btnClearOut.disabled = !enabled;
-        els.btnReset.disabled = !enabled;
+      function loadFromLS() {
+        const c = localStorage.getItem(LS_KEY_CODE);
+        const s = localStorage.getItem(LS_KEY_STDIN);
+        els.code.value = c ?? DEFAULT_CODE;
+        els.stdin.value = s ?? "";
       }
 
-      async function init() {
-        els.code.value = DEFAULT_CODE;
+      // Удобные Tab/Shift+Tab в textarea
+      function enableIndentation(textarea) {
+        textarea.addEventListener("keydown", (e) => {
+          if (e.key !== "Tab") return;
 
-        try {
-          pyodide = await loadPyodide({
-            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.26.2/full/",
-          });
+          e.preventDefault();
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          const value = textarea.value;
 
-          // Перехват stdout/stderr
-          pyodide.setStdout({
-            batched: (s) => appendOut(s),
-          });
-          pyodide.setStderr({
-            batched: (s) => appendOut(s),
-          });
+          // если выделено несколько строк — отступаем/разотступаем блоком
+          const before = value.slice(0, start);
+          const selected = value.slice(start, end);
+          const after = value.slice(end);
 
-          setStatus("Готово");
-          setUIEnabled(true);
-        } catch (e) {
-          setStatus("Ошибка загрузки Pyodide");
-          clearOut();
-          setErrorMode(true);
-          appendOut(String(e) + "\n");
-        }
-      }
+          const lines = selected.split("\n");
 
-      async function runCode() {
-        if (!pyodide) return;
+          if (!e.shiftKey) {
+            // indent
+            const indented = lines.map((ln) => "  " + ln).join("\n");
+            textarea.value = before + indented + after;
+            textarea.selectionStart = start + 2;
+            textarea.selectionEnd = end + 2 * lines.length;
+          } else {
+            // outdent
+            const outdented = lines
+              .map((ln) => (ln.startsWith("  ") ? ln.slice(2) : ln.startsWith("\t") ? ln.slice(1) : ln))
+              .join("\n");
+            textarea.value = before + outdented + after;
 
-        setErrorMode(false);
-        appendOut("\n> Run\n");
-
-        const code = els.code.value;
-
-        // UI-блокировка на время выполнения
-        els.btnRun.disabled = true;
-        setStatus("Выполняется…");
-
-        try {
-          // runPythonAsync — чтобы поддерживать await и не блокировать промисы
-          const result = await pyodide.runPythonAsync(code);
-
-          // Если пользователь написал выражение последней строкой, Pyodide может вернуть значение
-          if (result !== undefined) {
-            appendOut(String(result) + "\n");
+            // приблизительная корректировка выделения
+            const removed = lines.reduce((acc, ln) => acc + (ln.startsWith("  ") || ln.startsWith("\t") ? 1 : 0), 0);
+            textarea.selectionStart = Math.max(start - 2, 0);
+            textarea.selectionEnd = Math.max(end - removed, 0);
           }
 
-          setStatus("Готово");
-        } catch (e) {
-          setStatus("Ошибка выполнения");
-          setErrorMode(true);
-          appendOut(String(e) + "\n");
-        } finally {
-          els.btnRun.disabled = false;
+          saveToLS();
+        });
+      }
+
+      // Worker (Pyodide) — создаём из строки (Blob)
+      function createWorker() {
+        if (worker) worker.terminate();
+
+        // interrupt buffer: 0 = no interrupt, 2 = KeyboardInterrupt (по примеру Pyodide)
+        let sab = null;
+        if (supportsSAB) {
+          sab = new SharedArrayBuffer(4);
+          interruptView = new Int32Array(sab);
+          interruptView[0] = 0;
+          els.sabState.textContent = "interrupt: SAB";
+        } else {
+          interruptView = null;
+          els.sabState.textContent = "interrupt: no SAB";
+        }
+
+        const workerCode = `
+          let pyodide = null;
+          let ready = false;
+
+          function post(type, payload) {
+            self.postMessage({ type, payload });
+          }
+
+          function nowMs(){ return (self.performance && performance.now) ? performance.now() : Date.now(); }
+
+          async function initPyodide(indexURL, sab) {
+            post("status", "Загрузка Pyodide…");
+            importScripts(indexURL + "pyodide.js");
+            pyodide = await loadPyodide({ indexURL });
+
+            // interrupt buffer (если есть)
+            if (sab) {
+              try {
+                pyodide.setInterruptBuffer(new Int32Array(sab));
+              } catch (e) {
+                // не критично
+              }
+            }
+
+            // stdout/stderr
+            pyodide.setStdout({ batched: (s) => post("stdout", s) });
+            pyodide.setStderr({ batched: (s) => post("stderr", s) });
+
+            ready = true;
+            post("ready", true);
+            post("status", "Готово");
+          }
+
+          async function runPython(code, stdinText) {
+            if (!ready) throw new Error("Pyodide not ready");
+
+            // Подмена stdin для input()
+            const setup = \`
+import sys, io
+sys.stdin = io.StringIO(\${JSON.stringify(stdinText)})
+\`;
+            await pyodide.runPythonAsync(setup);
+
+            // Запуск
+            return await pyodide.runPythonAsync(code);
+          }
+
+          self.onmessage = async (ev) => {
+            const { type, payload } = ev.data || {};
+            try {
+              if (type === "init") {
+                const { indexURL, sab } = payload;
+                await initPyodide(indexURL, sab);
+              }
+              if (type === "run") {
+                const { code, stdin } = payload;
+                const t0 = nowMs();
+                post("run_start", null);
+                let result = await runPython(code, stdin);
+                const t1 = nowMs();
+                post("run_done", { ms: Math.round(t1 - t0), result });
+              }
+            } catch (e) {
+              post("run_error", String(e));
+            }
+          };
+        `;
+
+        const blob = new Blob([workerCode], { type: "application/javascript" });
+        const url = URL.createObjectURL(blob);
+        worker = new Worker(url);
+        URL.revokeObjectURL(url);
+
+        worker.onmessage = (ev) => {
+          const { type, payload } = ev.data || {};
+          if (type === "status") setStatus(payload);
+
+          if (type === "ready") {
+            setUIReady(true);
+          }
+
+          if (type === "stdout") {
+            // Чтобы вывод не “слипался”, если прилетели куски без \\n:
+            // добавляем перенос, только если это типичный print-кусок без переноса.
+            // Это компромисс: print(..., end="") будет тоже переносить — но для утилиты обычно ок.
+            const s = String(payload);
+            appendOut(s.endsWith("\n") ? s : (s.length ? s + "\n" : s));
+          }
+
+          if (type === "stderr") {
+            setErr(true);
+            const s = String(payload);
+            appendOut(s.endsWith("\n") ? s : (s.length ? s + "\n" : s));
+          }
+
+          if (type === "run_start") {
+            els.btnRun.disabled = true;
+            els.btnStop.disabled = false;
+          }
+
+          if (type === "run_done") {
+            els.btnRun.disabled = false;
+            els.btnStop.disabled = true;
+
+            const { ms, result } = payload || {};
+            appendOut(`\\n> done (${ms} ms)\\n`);
+            if (result !== undefined && result !== null) {
+              appendOut(String(result) + "\\n");
+            }
+            setStatus("Готово");
+          }
+
+          if (type === "run_error") {
+            els.btnRun.disabled = false;
+            els.btnStop.disabled = true;
+            setErr(true);
+            appendOut(String(payload) + "\\n");
+            setStatus("Ошибка выполнения");
+          }
+        };
+
+        // init worker
+        worker.postMessage({
+          type: "init",
+          payload: {
+            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.26.2/full/",
+            sab: supportsSAB ? interruptView.buffer : null,
+          },
+        });
+      }
+
+      function hardResetWorker() {
+        // Жёсткий reset: если зависло — просто пересоздаём worker
+        setStatus("Перезапуск окружения…");
+        createWorker();
+        appendOut("\n> worker reset\n");
+      }
+
+      function requestInterrupt() {
+        // Мягкая остановка: через interrupt buffer (если доступно),
+        // и на всякий случай — fallback на hard reset.
+        appendOut("\n> stop requested\n");
+        if (interruptView) {
+          interruptView[0] = 2;
+        } else {
+          // Если SAB нет — сразу hard reset
+          hardResetWorker();
         }
       }
 
-      els.btnRun.addEventListener("click", runCode);
-      els.btnClearOut.addEventListener("click", () => {
-        setErrorMode(false);
-        clearOut();
-      });
-      els.btnReset.addEventListener("click", () => {
-        els.code.value = DEFAULT_CODE;
+      async function run() {
+        if (!worker) return;
+
+        saveToLS();
+        setErr(false);
+        appendOut("\n> run\n");
+
+        // сброс interrupt флага
+        if (interruptView) interruptView[0] = 0;
+
+        const code = els.code.value;
+        const stdin = els.stdin.value;
+        const timeoutSec = Math.max(1, Math.min(60, Number(els.timeout.value || 5)));
+
+        setStatus("Выполняется…");
+
+        // Таймаут: просим interrupt, затем через небольшой лаг делаем hard reset, если не остановилось
+        let timeoutId = setTimeout(() => {
+          appendOut(`\n> timeout (${timeoutSec}s)\n`);
+          requestInterrupt();
+          // если после interrupt всё равно “висит”, перезапускаем worker
+          setTimeout(() => {
+            if (!els.btnStop.disabled) {
+              appendOut("\n> force reset\n");
+              hardResetWorker();
+              els.btnRun.disabled = false;
+              els.btnStop.disabled = true;
+              setStatus("Готово");
+            }
+          }, 400);
+        }, timeoutSec * 1000);
+
+        worker.postMessage({ type: "run", payload: { code, stdin } });
+
+        // Очистим таймаут при завершении (через хук на run_done/run_error)
+        const cleanup = (ev) => {
+          const t = ev.data?.type;
+          if (t === "run_done" || t === "run_error") {
+            clearTimeout(timeoutId);
+            worker.removeEventListener("message", cleanup);
+          }
+        };
+        worker.addEventListener("message", cleanup);
+      }
+
+      function downloadPy() {
+        const blob = new Blob([els.code.value], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "script.py";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      function uploadPy() {
+        els.fileInput.click();
+      }
+
+      els.fileInput.addEventListener("change", async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const text = await file.text();
+        els.code.value = text;
+        saveToLS();
+        e.target.value = "";
       });
 
-      init();
+      // Hotkeys
+      document.addEventListener("keydown", (e) => {
+        const isCmdEnter = (e.metaKey || e.ctrlKey) && e.key === "Enter";
+        const isCmdL = (e.metaKey || e.ctrlKey) && (e.key.toLowerCase() === "l");
+
+        if (isCmdEnter) {
+          e.preventDefault();
+          if (!els.btnRun.disabled) run();
+        }
+        if (isCmdL) {
+          e.preventDefault();
+          clearOut();
+        }
+      });
+
+      // Buttons
+      els.btnRun.addEventListener("click", run);
+      els.btnStop.addEventListener("click", requestInterrupt);
+      els.btnClearOut.addEventListener("click", clearOut);
+      els.btnResetCode.addEventListener("click", () => { els.code.value = DEFAULT_CODE; saveToLS(); });
+      els.btnDownload.addEventListener("click", downloadPy);
+      els.btnUpload.addEventListener("click", uploadPy);
+
+      els.code.addEventListener("input", saveToLS);
+      els.stdin.addEventListener("input", saveToLS);
+
+      enableIndentation(els.code);
+      enableIndentation(els.stdin);
+
+      // init
+      loadFromLS();
+      createWorker();
+      setUIReady(false);
+      setStatus("Инициализация…");
     </script>
   </body>
 </html>
