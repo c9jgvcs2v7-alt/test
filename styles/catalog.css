@@ -1,0 +1,229 @@
+:root {
+  --bg: #f6f5fa;
+  --text: #212121;
+  --muted: rgba(33, 33, 33, 0.58);
+
+  --card: #ffffff;
+  --line: rgba(33, 33, 33, 0.06);
+  --shadow: 0 6px 18px rgba(33, 33, 33, 0.06);
+
+  --r: 22px;
+  --gap: 14px;
+
+  --emojiPad: 10px;
+  --emojiScale: 1.1;
+
+  --pressScale: 0.985;
+
+  --navH: 64px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  padding: 14px 16px calc(var(--navH) + 14px);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--line);
+}
+
+.chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0 10px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.88);
+  color: rgba(33, 33, 33, 0.72);
+  padding: 9px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease, border-color 120ms ease, color 120ms ease, background 120ms ease;
+}
+
+.chip[aria-selected="true"] {
+  background: #ffffff;
+  color: rgba(33, 33, 33, 0.92);
+  border-color: rgba(33, 33, 33, 0.12);
+}
+
+.chip:active {
+  transform: scale(0.98);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap);
+}
+
+@media (max-width: 360px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  position: relative;
+  display: block;
+  aspect-ratio: 1 / 1;
+  background: var(--card);
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+
+  text-decoration: none;
+  color: inherit;
+
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transform: translateZ(0);
+  transition: transform 120ms ease;
+}
+
+.card:active {
+  transform: scale(var(--pressScale));
+}
+
+.stage {
+  position: absolute;
+  inset: var(--emojiPad);
+  overflow: hidden;
+}
+
+.lottie {
+  width: 100%;
+  height: 100%;
+}
+
+.lottie svg {
+  width: 100%;
+  height: 100%;
+  transform: scale(var(--emojiScale));
+  transform-origin: 50% 50%;
+}
+
+.error {
+  display: none;
+  margin-top: 12px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.bottomNav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--navH);
+  background: rgba(255, 255, 255, 0.94);
+  border-top: 1px solid rgba(33, 33, 33, 0.08);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding-bottom: env(safe-area-inset-bottom);
+  backdrop-filter: blur(12px);
+}
+
+.navItem {
+  appearance: none;
+  border: none;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  padding: 10px 0 12px;
+  color: rgba(33, 33, 33, 0.45);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease, color 120ms ease;
+}
+
+.navItem:active {
+  transform: scale(0.96);
+}
+
+.navItem[aria-current="page"] {
+  color: rgba(33, 33, 33, 0.92);
+}
+
+.navIcon {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+.navIcon path,
+.navIcon rect,
+.navIcon circle {
+  stroke: currentColor;
+  stroke-width: 2.4;
+  fill: none;
+}

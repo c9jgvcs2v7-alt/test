@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Профиль</title>
+    <link rel="stylesheet" href="../styles/profile.css" />
+  </head>
+
+  <body>
+    <div class="app">
+      <main class="main">
+        <div class="topbar">
+          <h1 class="title">Профиль</h1>
+        </div>
+
+        <div class="card">
+          <h2 class="cardTitle">User ID</h2>
+          <p class="cardText">Введите любой номер. Под этим номером будут видны ваши эмодзи в разделе «Мои».</p>
+          <div class="field">
+            <input class="input" id="userIdInput" type="text" inputmode="numeric" placeholder="Например, 0" />
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="cardTitle">Раздел в разработке</h2>
+          <p class="cardText">Здесь позже появятся данные пользователя, история покупок, поддержка и настройки.</p>
+        </div>
+      </main>
+
+      <nav class="bottomNav" aria-label="Нижняя навигация">
+        <button class="navItem" type="button" data-route="catalog" aria-label="Каталог">
+          <svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="8" height="8" rx="2"></rect>
+            <rect x="13" y="3" width="8" height="8" rx="2"></rect>
+            <rect x="3" y="13" width="8" height="8" rx="2"></rect>
+            <rect x="13" y="13" width="8" height="8" rx="2"></rect>
+          </svg>
+        </button>
+
+        <button class="navItem" type="button" data-route="my" aria-label="Мои эмодзи">
+          <svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 3h12a2 2 0 0 1 2 2v16l-8-3.5L4 21V5a2 2 0 0 1 2-2Z"></path>
+          </svg>
+        </button>
+
+        <button class="navItem" aria-current="page" type="button" data-route="profile" aria-label="Профиль">
+          <svg class="navIcon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="8" r="4"></circle>
+            <path d="M4 20c2.2-4 13.8-4 16 0"></path>
+          </svg>
+        </button>
+      </nav>
+    </div>
+
+    <script src="../scripts/profile.js"></script>
+  </body>
+</html>

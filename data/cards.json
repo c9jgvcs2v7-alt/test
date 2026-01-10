@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "id": "p1",
+      "lottiePath": "../assets/lottie/output_1.json",
+      "hasLogo": true,
+      "colorsCount": 3
+    },
+    {
+      "id": "p2",
+      "lottiePath": "../assets/lottie/output_2.json",
+      "hasLogo": false,
+      "colorsCount": 6
+    },
+    {
+      "id": "p3",
+      "lottiePath": "../assets/lottie/output_3.json",
+      "hasLogo": false,
+      "colorsCount": 6
+    }
+  ]
+}
